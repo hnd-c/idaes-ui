@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path'
+import * as path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -12,5 +12,8 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src'),
     }
+  },
+  define: {
+    'import.meta.env.VITE_MODE': JSON.stringify(process.env.VITE_MODE || 'prod')
   }
 })

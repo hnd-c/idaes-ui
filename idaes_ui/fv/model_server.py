@@ -64,8 +64,10 @@ class FlowsheetServer(http.server.HTTPServer):
         """Create HTTP server"""
         # port for dev remove it to allow system get random port in production
         self._port = port or find_free_port()
-        _log.info(f"Starting HTTP server on localhost, port {self._port}")
-        super().__init__(("127.0.0.1", self._port), FlowsheetServerHandler)
+        # Use 0.0.0.0 for Docker compatibility, 127.0.0.1 for local development
+        host = "0.0.0.0" if os.environ.get("DOCKER_CONTAINER") else "127.0.0.1"
+        _log.info(f"Starting HTTP server on {host}, port {self._port}")
+        super().__init__((host, self._port), FlowsheetServerHandler)
         self._dsm = persist.DataStoreManager()
         self._flowsheets = {}
         self._thr = None
@@ -306,7 +308,7 @@ class FlowsheetServerHandler(http.server.SimpleHTTPRequestHandler):
             self._get_diagnostics(id_)
         else:
             # Try to serve a file
-            self.directory = _static_dir  # keep here: overwritten if set earlier
+            self.directory = str(_static_dir)  # keep here: overwritten if set earlier
             super().do_GET()
 
     def _get_app(self, id_):
